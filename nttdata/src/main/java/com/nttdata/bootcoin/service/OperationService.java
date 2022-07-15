@@ -10,7 +10,7 @@ public interface OperationService {
 
   Operation save(Operation operation);
 
-  //List<Operation> findOperationId(int id);
+  List<Operation> findOperationId(int id);
 
   List<Operation> findAll();
 

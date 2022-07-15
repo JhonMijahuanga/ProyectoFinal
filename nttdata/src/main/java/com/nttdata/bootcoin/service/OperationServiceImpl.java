@@ -1,13 +1,16 @@
 package com.nttdata.bootcoin.service;
 
 import com.nttdata.bootcoin.kafkaService.OperationEventServiceKafka;
+import com.nttdata.bootcoin.model.bean.Buyer;
 import com.nttdata.bootcoin.model.bean.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -17,6 +20,9 @@ public class OperationServiceImpl implements OperationService {
 
   @Autowired
   private RedisTemplate template;
+
+  @Autowired
+  private BuyerService buyerService;
 
   @Autowired
   private OperationEventServiceKafka serviceKafka;
@@ -44,15 +50,29 @@ public class OperationServiceImpl implements OperationService {
     }
     return operation;
   }
-
- /* @Override
+  @Override
   public List<Operation> findOperationId(int id) {
-
-    return (List<Operation>) template.opsForHash().values(id);
+    String idBuyer= String.valueOf(id);
+    log.info("Entra a busqueda por ID");
+    List<Operation> list = new ArrayList<Operation>();
+    list=template.opsForHash().values(HASH_KEY);
+    log.info("el template es: " + list);
+    List<Operation> listOperation = list.stream()
+        .filter(p -> p.getIdBuyer().equals(idBuyer))
+        .collect(Collectors.toList());
+    log.info("La lista es: " +listOperation);
+    return listOperation;
   }
-*/
   @Override
   public List<Operation> findAll() {
+
     return template.opsForHash().values(HASH_KEY);
+
+  }
+  public Buyer findBuyerById (int id, double n){
+    Buyer buyer = buyerService.findBuyerId(id);
+    double total= buyer.getBalance()+n;
+    buyer.setBalance(total);
+    return buyer;
   }
 }
